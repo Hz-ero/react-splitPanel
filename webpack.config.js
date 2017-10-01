@@ -7,17 +7,17 @@ module.exports = {
     historyApiFallback: true,
     hot: true,
     inline: true,
-    contentBase: path.join(__dirname, "example"),
+    contentBase: path.join(__dirname, 'example'),
     port: 8080,
-    stats: { colors: true }
+    stats: { colors: true },
   },
 
-  entry: './example/index.js',
+  entry: './example/index.jsx',
 
   output: {
-    path: path.join(__dirname, "example"),
+    path: path.join(__dirname, 'example'),
     publicPath: '/',
-    filename:'bundle.js',
+    filename: 'bundle.js',
   },
 
   module: {
@@ -30,10 +30,10 @@ module.exports = {
             loader: 'css-loader',
             options: {
               module: true,
-              localIdentName: '[path][name]__[local]--[hash:base64:5]'
-            }
-          }
-        ]
+              localIdentName: '[path][name]__[local]--[hash:base64:5]',
+            },
+          },
+        ],
       },
       {
         test: /\.js[x]?$/,
@@ -41,21 +41,21 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['env', 'react', 'stage-0']
-          }
-        }
-      }
-    ]
+            presets: ['env', 'react', 'stage-0'],
+          },
+        },
+      },
+    ],
   },
 
   resolve: {
-    extensions: ['.js', '.jsx']
+    extensions: ['.js', '.jsx'],
   },
 
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
     new OpenBrowserPlugin({
-      url: 'http://localhost:8080'
+      url: 'http://localhost:8080',
     }),
-  ]
+  ],
 }

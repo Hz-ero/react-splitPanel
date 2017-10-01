@@ -4,7 +4,7 @@ import style from './index.css'
 
 const ResizePanel = (props) => {
   const domStyle = {
-    flexBasis: `${props.space}%`
+    flexBasis: `${props.space}%`,
   }
 
   return (
@@ -19,7 +19,7 @@ const ResizePanel = (props) => {
 
 ResizePanel.propTypes = {
   space: PropTypes.number.isRequired,
-  children: PropTypes.element.isRequired
+  children: PropTypes.element.isRequired,
 }
 
 export default ResizePanel

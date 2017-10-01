@@ -11,9 +11,9 @@ import ResizePanel from './ResizePanel/index.jsx'
  * @returns {Object} 
  */
 const getDomStyle = (ele) => {
-  const style = ele.currentStyle ? ele.currentStyle : window.getComputedStyle(ele, null)
+  const domStyle = ele.currentStyle ? ele.currentStyle : window.getComputedStyle(ele, null)
 
-  return style
+  return domStyle
 }
 
 // 定义两个组件用于初始化显示，如果用户没有提供内容则会显示他们
@@ -25,7 +25,7 @@ const InitBackwardComp = () => (
 )
 
 class SplitPanel extends React.Component {
-  constructor (props) {
+  constructor(props) {
     super(props)
     // function bindding
     this.handleResize = this.handleResize.bind(this)
@@ -37,11 +37,11 @@ class SplitPanel extends React.Component {
       splitSpace: props.splitSpace,
       forwardSpacePer: 0,
       backwardSpacePer: 0,
-      prevDragValue: 0
+      prevDragValue: 0,
     }
   }
 
-  componentDidMount () {
+  componentDidMount() {
     const dom = ReactDOM.findDOMNode(this)
     // 获取SplitPanel组件总尺寸
     const totalWidth = Number.parseFloat(getDomStyle(dom).width)
@@ -57,33 +57,32 @@ class SplitPanel extends React.Component {
 
     // 根据拖动条占比计算内部前后两个组件所占空间百分比
     this.setState({
-      forwardSpacePer: Number.parseFloat(((1 - splitSpacePer) * 100 / 2).toFixed(4)),
-      backwardSpacePer: Number.parseFloat(((1 - splitSpacePer) * 100 / 2).toFixed(4))
+      forwardSpacePer: Number.parseFloat(((1 - splitSpacePer) * 50).toFixed(4)),
+      backwardSpacePer: Number.parseFloat(((1 - splitSpacePer) * 50).toFixed(4)),
     })
 
     // 监听窗口尺寸变化
     window.addEventListener('resize', this.onWindowResize)
   }
 
-  componentWillUnmount () {
+  componentWillUnmount() {
     // 取消监听窗口尺寸变化
     window.removeEventListener('resize', this.onWindowResize)
   }
 
   // 当窗口尺寸变化时重新计算各组件空间百分比
-  onWindowResize (e) {
+  onWindowResize() {
     const dom = ReactDOM.findDOMNode(this)
     // 获取SplitPanel组件总尺寸
     const totalWidth = Number.parseFloat(getDomStyle(dom).width)
     const totalHeight = Number.parseFloat(getDomStyle(dom).height)
 
-    
     // resize前状态
     const {
       ifHorizontal,
       splitSpace,
       forwardSpacePer,
-      backwardSpacePer
+      backwardSpacePer,
     } = this.state
 
     // 计算resize前SplitPanel组件所占空间值
@@ -103,48 +102,80 @@ class SplitPanel extends React.Component {
     // 给内部组件占比重新赋值
     this.setState(() => ({
       forwardSpacePer: newForwardSapcePer,
-      backwardSpacePer: newBackwardSapcePer
+      backwardSpacePer: newBackwardSapcePer,
     }))
   }
 
   // 对上一次拖动记录清零
-  handleCleanPrevDrag () {
+  handleCleanPrevDrag() {
     this.setState({
-      prevDragValue: 0
+      prevDragValue: 0,
     })
   }
 
-  handleResize (dragValue) {
+  handleResize(dragValue) {
     const dom = ReactDOM.findDOMNode(this)
     // 获取SplitPanel组件总尺寸
     const totalWidth = Number.parseFloat(getDomStyle(dom).width)
     const totalHeight = Number.parseFloat(getDomStyle(dom).height)
 
-    // 计算拖动距离所占百分比
+    // 计算拖动距离所占百分比, 子组件最大占比
     let movePer
+    let maxSpacePer
     if (this.state.ifHorizontal) {
-      movePer = (dragValue - this.state.prevDragValue) * 100 / totalWidth
+      movePer = ((dragValue - this.state.prevDragValue) * 100) / totalWidth
+      maxSpacePer = (1 - (this.state.splitSpace / totalWidth)) * 100
     } else {
-      movePer = (dragValue - this.state.prevDragValue) * 100 / totalHeight
+      movePer = ((dragValue - this.state.prevDragValue) * 100) / totalHeight
+      maxSpacePer = (1 - (this.state.splitSpace / totalHeight)) * 100
     }
 
-    // 重新赋值，赋值结束后记录当前拖动距离，由prevDragValue保存
-    this.setState(
-      (prevState, props) => ({
-        forwardSpacePer: prevState.forwardSpacePer + movePer,
-        backwardSpacePer: prevState.backwardSpacePer - movePer
-      }),
-      () => {
-        this.setState({
-          prevDragValue: dragValue
-        })
-      }
-    )
+    // 处理边界问题
+    if ((this.state.forwardSpacePer + movePer) >= maxSpacePer) {
+      // 重新赋值，赋值结束后记录当前拖动距离，由prevDragValue保存
+      this.setState(
+        () => ({
+          forwardSpacePer: maxSpacePer,
+          backwardSpacePer: 0,
+        }),
+        () => {
+          this.setState({
+            prevDragValue: dragValue,
+          })
+        },
+      )
+    } else if ((this.state.forwardSpacePer + movePer) <= 0) {
+      // 重新赋值，赋值结束后记录当前拖动距离，由prevDragValue保存
+      this.setState(
+        () => ({
+          forwardSpacePer: 0,
+          backwardSpacePer: maxSpacePer,
+        }),
+        () => {
+          this.setState({
+            prevDragValue: dragValue,
+          })
+        },
+      )
+    } else {
+      // 重新赋值，赋值结束后记录当前拖动距离，由prevDragValue保存
+      this.setState(
+        prevState => ({
+          forwardSpacePer: prevState.forwardSpacePer + movePer,
+          backwardSpacePer: prevState.backwardSpacePer - movePer,
+        }),
+        () => {
+          this.setState({
+            prevDragValue: dragValue,
+          })
+        },
+      )
+    }
   }
 
-  render () {
+  render() {
     const domStyle = {
-      flexDirection: this.state.ifHorizontal ? 'row' : 'column'
+      flexDirection: this.state.ifHorizontal ? 'row' : 'column',
     }
 
     let forwardComp = null
@@ -195,12 +226,14 @@ class SplitPanel extends React.Component {
 // 为属性指定默认值:
 SplitPanel.defaultProps = {
   ifHorizontal: false,
-  splitSpace: 20
+  splitSpace: 20,
+  children: null,
 }
 
 SplitPanel.propTypes = {
   ifHorizontal: PropTypes.bool,
-  splitSpace: PropTypes.number
+  splitSpace: PropTypes.number,
+  children: PropTypes.element,
 }
 
 export default SplitPanel

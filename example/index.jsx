@@ -4,5 +4,5 @@ import App from './App/index.jsx'
 
 render(
   <App />,
-  document.getElementById('root')
+  document.getElementById('root'),
 )

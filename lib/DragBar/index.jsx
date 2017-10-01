@@ -5,7 +5,7 @@ import style from './index.css'
 const DragBar = (props) => {
   // inline style
   const domStyle = {
-    flexBasis: `${props.space}px`
+    flexBasis: `${props.space}px`,
   }
 
   // modules style
@@ -17,30 +17,8 @@ const DragBar = (props) => {
   }
 
   // log: 当前位置
-  let currentX, currentY
-
-  const dragStart = (e) => {
-    // 屏蔽右键
-    if (e.button === 2) {
-      return false
-    }
-
-    // 记录拖动时的开始位置
-    currentX = e.clientX
-    currentY = e.clientY
-
-    document.addEventListener('mousemove', handleDrag)
-    document.addEventListener('mouseup', dragEnd)
-  }
-
-  const dragEnd = (e) => {
-    // 清除document事件监听
-    document.removeEventListener('mousemove', handleDrag)
-    document.removeEventListener('mouseup', dragEnd)
-
-    // 清除上一次存留的拖拽位移
-    props.cleanPrevDrag()
-  }
+  let currentX
+  let currentY
 
   const handleDrag = (e) => {
     // log: 拖拽距离
@@ -55,12 +33,37 @@ const DragBar = (props) => {
     props.onResize(dragValue)
   }
 
+  const dragEnd = () => {
+    // 清除document事件监听
+    document.removeEventListener('mousemove', handleDrag)
+    document.removeEventListener('mouseup', dragEnd)
+
+    // 清除上一次存留的拖拽位移
+    props.cleanPrevDrag()
+  }
+
+  const dragStart = (e) => {
+    // 屏蔽右键
+    if (e.button === 2) {
+      return false
+    }
+
+    // 记录拖动时的开始位置
+    currentX = e.clientX
+    currentY = e.clientY
+
+    document.addEventListener('mousemove', handleDrag)
+    document.addEventListener('mouseup', dragEnd)
+
+    return true
+  }
+
   return (
     <div
       style={domStyle}
       className={moduleStyle}
-      onMouseDown={(e) => dragStart(e)}
-      onMouseUp={(e) => dragEnd(e)}
+      onMouseDown={e => dragStart(e)}
+      onMouseUp={e => dragEnd(e)}
     />
   )
 }
@@ -69,7 +72,7 @@ DragBar.propTypes = {
   ifHorizontal: PropTypes.bool.isRequired,
   space: PropTypes.number.isRequired,
   cleanPrevDrag: PropTypes.func.isRequired,
-  onResize: PropTypes.func.isRequired
+  onResize: PropTypes.func.isRequired,
 }
 
 export default DragBar
